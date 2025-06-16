@@ -6,19 +6,18 @@
 #include "QObjectPtr.h"
 
 #include "JavaVersion.h"
+#include <sys.h>
 
 class JavaChecker;
 
 struct JavaCheckResult
 {
     QString path;
-    QString mojangPlatform;
-    QString realPlatform;
+    Sys::Architecture architecture;
     JavaVersion javaVersion;
     QString javaVendor;
     QString outLog;
     QString errorLog;
-    bool is_64bit = false;
     int id;
     enum class Validity
     {

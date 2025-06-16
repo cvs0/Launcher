@@ -212,26 +212,19 @@ set(MINECRAFT_SOURCES
     minecraft/auth/MinecraftAccount.h
     minecraft/auth/Parsers.cpp
     minecraft/auth/Parsers.h
-    minecraft/auth/Yggdrasil.cpp
-    minecraft/auth/Yggdrasil.h
 
     minecraft/auth/flows/AuthFlow.cpp
     minecraft/auth/flows/AuthFlow.h
-    minecraft/auth/flows/Mojang.cpp
-    minecraft/auth/flows/Mojang.h
     minecraft/auth/flows/MSA.cpp
     minecraft/auth/flows/MSA.h
 
+    # Auth steps
     minecraft/auth/steps/EntitlementsStep.cpp
     minecraft/auth/steps/EntitlementsStep.h
-    minecraft/auth/steps/ForcedMigrationStep.cpp
-    minecraft/auth/steps/ForcedMigrationStep.h
     minecraft/auth/steps/GetSkinStep.cpp
     minecraft/auth/steps/GetSkinStep.h
     minecraft/auth/steps/LauncherLoginStep.cpp
     minecraft/auth/steps/LauncherLoginStep.h
-    minecraft/auth/steps/MigrationEligibilityStep.cpp
-    minecraft/auth/steps/MigrationEligibilityStep.h
     minecraft/auth/steps/MinecraftProfileStep.cpp
     minecraft/auth/steps/MinecraftProfileStep.h
     minecraft/auth/steps/MSAStep.cpp
@@ -242,8 +235,14 @@ set(MINECRAFT_SOURCES
     minecraft/auth/steps/XboxProfileStep.h
     minecraft/auth/steps/XboxUserStep.cpp
     minecraft/auth/steps/XboxUserStep.h
-    minecraft/auth/steps/YggdrasilStep.cpp
-    minecraft/auth/steps/YggdrasilStep.h
+
+    # API call steps
+    minecraft/auth/steps/SetSkinStep.cpp
+    minecraft/auth/steps/SetSkinStep.h
+    minecraft/auth/steps/SetCapeStep.cpp
+    minecraft/auth/steps/SetCapeStep.h
+    minecraft/auth/steps/MinecraftProfileCreateStep.cpp
+    minecraft/auth/steps/MinecraftProfileCreateStep.h
 
     minecraft/gameoptions/GameOptions.h
     minecraft/gameoptions/GameOptions.cpp
@@ -343,14 +342,6 @@ set(MINECRAFT_SOURCES
     # Assets
     minecraft/AssetsUtils.h
     minecraft/AssetsUtils.cpp
-
-    # Minecraft services
-    minecraft/services/CapeChange.cpp
-    minecraft/services/CapeChange.h
-    minecraft/services/SkinUpload.cpp
-    minecraft/services/SkinUpload.h
-    minecraft/services/SkinDelete.cpp
-    minecraft/services/SkinDelete.h
 
     mojang/PackageManifest.h
     mojang/PackageManifest.cpp
@@ -587,24 +578,30 @@ SET(LAUNCHER_SOURCES
     KonamiCode.h
     KonamiCode.cpp
 
-    # Bundled resources
-    resources/backgrounds/backgrounds.qrc
-    resources/multimc/multimc.qrc
-    resources/pe_dark/pe_dark.qrc
-    resources/pe_light/pe_light.qrc
-    resources/pe_colored/pe_colored.qrc
-    resources/pe_blue/pe_blue.qrc
-    resources/OSX/OSX.qrc
-    resources/iOS/iOS.qrc
-    resources/flat/flat.qrc
-    resources/documents/documents.qrc
-    ../${Launcher_Branding_LogoQRC}
-
     # Icons
     icons/MMCIcon.h
     icons/MMCIcon.cpp
     icons/IconList.h
     icons/IconList.cpp
+
+    # Skins
+    skins/CapeCache.h
+    skins/CapeCache.cpp
+    skins/CapesModel.h
+    skins/CapesModel.cpp
+    skins/SkinsModel.h
+    skins/SkinsModel.cpp
+    skins/SkinRenderer.h
+    skins/SkinRenderer.cpp
+    skins/SkinWidget.h
+    skins/SkinWidget.cpp
+    skins/SkinTypes.h
+    skins/SkinTypes.cpp
+    skins/SkinUtils.h
+    skins/SkinUtils.cpp
+    skins/TextureMappings.h
+    skins/TextureMappings.cpp
+
 
     # GUI - windows
     ui/GuiUtil.h
@@ -616,15 +613,9 @@ SET(LAUNCHER_SOURCES
     ui/InstanceWindow.h
     ui/InstanceWindow.cpp
 
-    # FIXME: maybe find a better home for this.
-    SkinUtils.cpp
-    SkinUtils.h
-
     # GUI - setup wizard
     ui/setupwizard/SetupWizard.h
     ui/setupwizard/SetupWizard.cpp
-    ui/setupwizard/AnalyticsWizardPage.cpp
-    ui/setupwizard/AnalyticsWizardPage.h
     ui/setupwizard/BaseWizardPage.h
     ui/setupwizard/JavaWizardPage.cpp
     ui/setupwizard/JavaWizardPage.h
@@ -689,8 +680,6 @@ SET(LAUNCHER_SOURCES
     ui/pages/instance/WorldListPage.h
 
     # GUI - global settings pages
-    ui/pages/global/AccountListPage.cpp
-    ui/pages/global/AccountListPage.h
     ui/pages/global/CustomCommandsPage.cpp
     ui/pages/global/CustomCommandsPage.h
     ui/pages/global/ExternalToolsPage.cpp
@@ -752,30 +741,26 @@ SET(LAUNCHER_SOURCES
     # GUI - dialogs
     ui/dialogs/AboutDialog.cpp
     ui/dialogs/AboutDialog.h
+    ui/dialogs/AccountsDialog.cpp
+    ui/dialogs/AccountsDialog.h
     ui/dialogs/ProfileSelectDialog.cpp
     ui/dialogs/ProfileSelectDialog.h
-    ui/dialogs/ProfileSetupDialog.cpp
-    ui/dialogs/ProfileSetupDialog.h
     ui/dialogs/CopyInstanceDialog.cpp
     ui/dialogs/CopyInstanceDialog.h
     ui/dialogs/CustomMessageBox.cpp
     ui/dialogs/CustomMessageBox.h
-    ui/dialogs/EditAccountDialog.cpp
-    ui/dialogs/EditAccountDialog.h
     ui/dialogs/ExportInstanceDialog.cpp
     ui/dialogs/ExportInstanceDialog.h
     ui/dialogs/IconPickerDialog.cpp
     ui/dialogs/IconPickerDialog.h
-    ui/dialogs/LoginDialog.cpp
-    ui/dialogs/LoginDialog.h
-    ui/dialogs/MSALoginDialog.cpp
-    ui/dialogs/MSALoginDialog.h
     ui/dialogs/NewComponentDialog.cpp
     ui/dialogs/NewComponentDialog.h
     ui/dialogs/NewInstanceDialog.cpp
     ui/dialogs/NewInstanceDialog.h
     ui/dialogs/NotificationDialog.cpp
     ui/dialogs/NotificationDialog.h
+    ui/dialogs/OfflineNameDialog.cpp
+    ui/dialogs/OfflineNameDialog.h
     ui/pagedialog/PageDialog.cpp
     ui/pagedialog/PageDialog.h
     ui/dialogs/ProgressDialog.cpp
@@ -784,8 +769,6 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/UpdateDialog.h
     ui/dialogs/VersionSelectDialog.cpp
     ui/dialogs/VersionSelectDialog.h
-    ui/dialogs/SkinUploadDialog.cpp
-    ui/dialogs/SkinUploadDialog.h
     ui/dialogs/CreateShortcutDialog.cpp
     ui/dialogs/CreateShortcutDialog.h
     ui/dialogs/ModrinthExportDialog.cpp
@@ -827,6 +810,8 @@ SET(LAUNCHER_SOURCES
     ui/widgets/ProgressWidget.cpp
     ui/widgets/WideBar.h
     ui/widgets/WideBar.cpp
+    ui/widgets/WrapLabel.h
+    ui/widgets/WrapLabel.cpp
 
     # GUI - instance group view
     ui/instanceview/InstanceProxyModel.cpp
@@ -843,52 +828,50 @@ SET(LAUNCHER_SOURCES
 )
 
 qt5_wrap_ui(LAUNCHER_UI
-    ui/pages/global/AccountListPage.ui
-    ui/pages/global/JavaPage.ui
-    ui/pages/global/LauncherPage.ui
-    ui/pages/global/PasteEEPage.ui
-    ui/pages/global/ProxyPage.ui
-    ui/pages/global/MinecraftPage.ui
-    ui/pages/global/ExternalToolsPage.ui
-    ui/pages/instance/ModFolderPage.ui
-    ui/pages/instance/NotesPage.ui
-    ui/pages/instance/LogPage.ui
-    ui/pages/instance/ServersPage.ui
-    ui/pages/instance/GameOptionsPage.ui
-    ui/pages/instance/OtherLogsPage.ui
-    ui/pages/instance/InstanceSettingsPage.ui
-    ui/pages/instance/VersionPage.ui
-    ui/pages/instance/WorldListPage.ui
-    ui/pages/instance/LegacyUpgradePage.ui
-    ui/pages/instance/ScreenshotsPage.ui
-    ui/pages/modplatform/atlauncher/AtlOptionalModDialog.ui
-    ui/pages/modplatform/atlauncher/AtlPage.ui
-    ui/pages/modplatform/VanillaPage.ui
-    ui/pages/modplatform/legacy_ftb/Page.ui
-    ui/pages/modplatform/import_ftb/FTBAPage.ui
-    ui/pages/modplatform/ImportPage.ui
-    ui/pages/modplatform/modrinth/ModrinthPage.ui
-    ui/pages/modplatform/technic/TechnicPage.ui
-    ui/widgets/InstanceCardWidget.ui
-    ui/widgets/CustomCommands.ui
-    ui/widgets/MCModInfoFrame.ui
+    ui/dialogs/AboutDialog.ui
+    ui/dialogs/AccountsDialog.ui
     ui/dialogs/CopyInstanceDialog.ui
-    ui/dialogs/ProfileSetupDialog.ui
-    ui/dialogs/ProgressDialog.ui
-    ui/dialogs/NewInstanceDialog.ui
-    ui/dialogs/NotificationDialog.ui
-    ui/dialogs/UpdateDialog.ui
-    ui/dialogs/NewComponentDialog.ui
-    ui/dialogs/ProfileSelectDialog.ui
-    ui/dialogs/SkinUploadDialog.ui
+    ui/dialogs/CreateShortcutDialog.ui
     ui/dialogs/ExportInstanceDialog.ui
     ui/dialogs/IconPickerDialog.ui
-    ui/dialogs/MSALoginDialog.ui
-    ui/dialogs/AboutDialog.ui
-    ui/dialogs/LoginDialog.ui
-    ui/dialogs/EditAccountDialog.ui
-    ui/dialogs/CreateShortcutDialog.ui
     ui/dialogs/ModrinthExportDialog.ui
+    ui/dialogs/NewComponentDialog.ui
+    ui/dialogs/NewInstanceDialog.ui
+    ui/dialogs/NotificationDialog.ui
+    ui/dialogs/ProfileSelectDialog.ui
+    ui/dialogs/ProgressDialog.ui
+    ui/dialogs/UpdateDialog.ui
+    ui/pages/global/ExternalToolsPage.ui
+    ui/pages/global/JavaPage.ui
+    ui/pages/global/LauncherPage.ui
+    ui/pages/global/MinecraftPage.ui
+    ui/pages/global/PasteEEPage.ui
+    ui/pages/global/ProxyPage.ui
+    ui/pages/instance/GameOptionsPage.ui
+    ui/pages/instance/InstanceSettingsPage.ui
+    ui/pages/instance/LegacyUpgradePage.ui
+    ui/pages/instance/LogPage.ui
+    ui/pages/instance/ModFolderPage.ui
+    ui/pages/instance/NotesPage.ui
+    ui/pages/instance/OtherLogsPage.ui
+    ui/pages/instance/ScreenshotsPage.ui
+    ui/pages/instance/ServersPage.ui
+    ui/pages/instance/VersionPage.ui
+    ui/pages/instance/WorldListPage.ui
+    ui/pages/modplatform/ImportPage.ui
+    ui/pages/modplatform/VanillaPage.ui
+    ui/pages/modplatform/atlauncher/AtlOptionalModDialog.ui
+    ui/pages/modplatform/atlauncher/AtlPage.ui
+    ui/pages/modplatform/import_ftb/FTBAPage.ui
+    ui/pages/modplatform/legacy_ftb/Page.ui
+    ui/pages/modplatform/modrinth/ModrinthPage.ui
+    ui/pages/modplatform/technic/TechnicPage.ui
+    ui/widgets/CustomCommands.ui
+    ui/widgets/CustomCommands.ui
+    ui/widgets/InstanceCardWidget.ui
+    ui/widgets/InstanceCardWidget.ui
+    ui/widgets/MCModInfoFrame.ui
+    ui/widgets/MCModInfoFrame.ui
 )
 
 qt5_add_resources(LAUNCHER_RESOURCES
@@ -902,12 +885,13 @@ qt5_add_resources(LAUNCHER_RESOURCES
     resources/iOS/iOS.qrc
     resources/flat/flat.qrc
     resources/documents/documents.qrc
-    ../${Launcher_Branding_LogoQRC}
+    resources/skins/skins.qrc
+    ${Launcher_Branding_LogoQRC}
 )
 
 ######## Windows resource files ########
 if(WIN32)
-    set(LAUNCHER_RCS ../${Launcher_Branding_WindowsRC})
+    set(LAUNCHER_RCS ${Launcher_Branding_WindowsRC})
 endif()
 
 # Add executable
@@ -922,6 +906,7 @@ target_link_libraries(Launcher_logic
     tomlc99
     BuildConfig
     Katabasis
+    qrcode
 )
 target_link_libraries(Launcher_logic
     Qt5::Core
@@ -936,10 +921,7 @@ target_link_libraries(Launcher_logic
     hoedown
     Launcher_rainbow
     LocalPeer
-    ganalytics
 )
-
-target_link_libraries(Launcher_logic secrets)
 
 add_executable(${Launcher_Name} MACOSX_BUNDLE WIN32 main.cpp ${LAUNCHER_RCS})
 target_link_libraries(${Launcher_Name} Launcher_logic)

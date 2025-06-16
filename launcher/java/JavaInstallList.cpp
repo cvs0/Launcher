@@ -91,7 +91,7 @@ QVariant JavaInstallList::data(const QModelIndex &index, int role) const
         case PathRole:
             return version->path;
         case ArchitectureRole:
-            return version->arch;
+            return version->arch.serialize();
         default:
             return QVariant();
     }
@@ -183,11 +183,11 @@ void JavaListLoadTask::javaCheckerFinished()
             JavaInstallPtr javaVersion(new JavaInstall());
 
             javaVersion->id = result.javaVersion;
-            javaVersion->arch = result.mojangPlatform;
+            javaVersion->arch = result.architecture;
             javaVersion->path = result.path;
             candidates.append(javaVersion);
 
-            qDebug() << " " << javaVersion->id.toString() << javaVersion->arch << javaVersion->path;
+            qDebug() << " " << javaVersion->id.toString() << javaVersion->arch.serialize() << javaVersion->path;
         }
     }
 

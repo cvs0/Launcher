@@ -2,6 +2,7 @@
 #include <QString>
 #include "Library.h"
 #include <ProblemProvider.h>
+#include <sys.h>
 
 class LaunchProfile: public ProblemProvider
 {
@@ -41,7 +42,7 @@ public: /* getters for profile variables */
     const QList<LibraryPtr> & getMavenFiles() const;
     const LibraryPtr getMainJar() const;
     void getLibraryFiles(
-        const QString & architecture,
+        Sys::Architecture architecture,
         QStringList & jars,
         QStringList & nativeJars,
         const QString & overridePath,

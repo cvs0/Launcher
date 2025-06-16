@@ -276,7 +276,7 @@ const QList<LibraryPtr> & LaunchProfile::getMavenFiles() const
 }
 
 void LaunchProfile::getLibraryFiles(
-    const QString& architecture,
+    Sys::Architecture architecture,
     QStringList& jars,
     QStringList& nativeJars,
     const QString& overridePath,
@@ -308,11 +308,11 @@ void LaunchProfile::getLibraryFiles(
     {
         lib->getApplicableFiles(currentSystem, jars, nativeJars, native32, native64, overridePath);
     }
-    if(architecture == "32")
+    if(architecture.is32())
     {
         nativeJars.append(native32);
     }
-    else if(architecture == "64")
+    else if(architecture.is64())
     {
         nativeJars.append(native64);
     }

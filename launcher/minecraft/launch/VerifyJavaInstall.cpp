@@ -34,6 +34,15 @@ void VerifyJavaInstall::executeTask() {
     auto javaVersion = m_inst->getJavaVersion();
     auto minecraftComponent = m_inst->getPackProfile()->getComponent("net.minecraft");
 
+    // Java 21 Requirement
+    if (minecraftComponent->getReleaseDateTime() >= g_VersionFilterData.java21BeginsDate) {
+        if (javaVersion.major() < 21) {
+            emit logLine("Minecraft 24w14a and above require the use of Java 21",
+                         MessageLevel::Fatal);
+            emitFailed(tr("Minecraft 24w14a and above require the use of Java 21"));
+            return;
+        }
+    }
     // Java 17 requirement
     if (minecraftComponent->getReleaseDateTime() >= g_VersionFilterData.java17BeginsDate) {
         if (javaVersion.major() < 17) {

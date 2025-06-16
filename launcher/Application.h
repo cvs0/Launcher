@@ -33,7 +33,8 @@ class BaseDetachedToolFactory;
 class TranslationsModel;
 class ITheme;
 class MCEditTool;
-class GAnalytics;
+class CapeCache;
+class SkinsModel;
 
 namespace Meta {
     class Index;
@@ -59,10 +60,6 @@ public:
 public:
     Application(int &argc, char **argv);
     virtual ~Application();
-
-    GAnalytics *analytics() const {
-        return m_analytics;
-    }
 
     std::shared_ptr<SettingsObject> settings() const {
         return m_settings;
@@ -96,6 +93,10 @@ public:
         return m_icons;
     }
 
+    shared_qobject_ptr<SkinsModel> skinsModel() const {
+        return m_skinsModel;
+    }
+
     MCEditTool *mcedit() const {
         return m_mcedit.get();
     }
@@ -122,6 +123,8 @@ public:
 
     shared_qobject_ptr<Meta::Index> metadataIndex();
 
+    shared_qobject_ptr<CapeCache> capeCache();
+
     QString getJarsPath();
 
     /// this is the root of the 'installation'. Used for automatic updates
@@ -137,6 +140,8 @@ public:
 
     InstanceWindow *showInstanceWindow(InstancePtr instance, QString page = QString());
     MainWindow *showMainWindow(bool minimized = false);
+
+    void ShowAccountsDialog(class QWidget * parent);
 
     void updateIsRunning(bool running);
     bool updatesAreAllowed();
@@ -164,7 +169,6 @@ private slots:
     void messageReceived(const QByteArray & message);
     void controllerSucceeded();
     void controllerFailed(const QString & error);
-    void analyticsSettingChanged(const Setting &setting, QVariant value);
     void setupWizardFinished(int status);
 
 private:
@@ -189,6 +193,9 @@ private:
 
     shared_qobject_ptr<HttpMetaCache> m_metacache;
     shared_qobject_ptr<Meta::Index> m_metadataIndex;
+
+    shared_qobject_ptr<CapeCache> m_capeCache;
+    shared_qobject_ptr<SkinsModel> m_skinsModel;
 
     std::shared_ptr<SettingsObject> m_settings;
     std::shared_ptr<InstanceList> m_instances;
@@ -229,7 +236,6 @@ private:
     // peer launcher instance connector - used to implement single instance launcher and signalling
     LocalPeer * m_peerInstance = nullptr;
 
-    GAnalytics * m_analytics = nullptr;
     SetupWizard * m_setupWizard = nullptr;
 public:
     QString m_instanceIdToLaunch;

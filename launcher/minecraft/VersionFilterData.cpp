@@ -69,6 +69,7 @@ VersionFilterData::VersionFilterData()
     java8BeginsDate     = timeFromS3Time("2017-03-30T09:32:19+00:00");
     java16BeginsDate    = timeFromS3Time("2021-05-12T11:19:15+00:00");
     java17BeginsDate    = timeFromS3Time("2021-11-16T17:04:48+00:00");
+    java21BeginsDate    = timeFromS3Time("2024-04-03T11:49:39+00:00");
     quickPlayBeginsDate = timeFromS3Time("2023-04-05T12:05:17+00:00");
     liteLoaderEndsDate  = timeFromS3Time("2017-09-18T08:39:46+00:00");
     fabricBeginsDate    = timeFromS3Time("2019-04-23T14:52:44+00:00");

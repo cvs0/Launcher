@@ -5,6 +5,8 @@
 #include "minecraft/auth/AuthRequest.h"
 #include "minecraft/auth/Parsers.h"
 
+#include "BuildConfig.h"
+
 MinecraftProfileStep::MinecraftProfileStep(AccountData* data) : AuthStep(data) {
 
 }
@@ -17,7 +19,7 @@ QString MinecraftProfileStep::describe() {
 
 
 void MinecraftProfileStep::perform() {
-    auto url = QUrl("https://api.minecraftservices.com/minecraft/profile");
+    auto url = QString("%1/minecraft/profile").arg(BuildConfig.API_BASE);
     QNetworkRequest request = QNetworkRequest(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", QString("Bearer %1").arg(m_data->yggdrasilToken.token).toUtf8());
@@ -25,10 +27,6 @@ void MinecraftProfileStep::perform() {
     AuthRequest *requestor = new AuthRequest(this);
     connect(requestor, &AuthRequest::finished, this, &MinecraftProfileStep::onRequestDone);
     requestor->get(request);
-}
-
-void MinecraftProfileStep::rehydrate() {
-    // NOOP, for now. We only save bools and there's nothing to check.
 }
 
 void MinecraftProfileStep::onRequestDone(
@@ -44,10 +42,6 @@ void MinecraftProfileStep::onRequestDone(
 #endif
     if (error == QNetworkReply::ContentNotFoundError) {
         // NOTE: Succeed even if we do not have a profile. This is a valid account state.
-        if(m_data->type == AccountType::Mojang) {
-            m_data->minecraftEntitlement.canPlayMinecraft = false;
-            m_data->minecraftEntitlement.ownsMinecraft = false;
-        }
         m_data->minecraftProfile = MinecraftProfile();
         emit finished(
             AccountTaskState::STATE_SUCCEEDED,
@@ -79,11 +73,6 @@ void MinecraftProfileStep::onRequestDone(
         return;
     }
 
-    if(m_data->type == AccountType::Mojang) {
-        auto validProfile = m_data->minecraftProfile.validity == Katabasis::Validity::Certain;
-        m_data->minecraftEntitlement.canPlayMinecraft = validProfile;
-        m_data->minecraftEntitlement.ownsMinecraft = validProfile;
-    }
     emit finished(
         AccountTaskState::STATE_WORKING,
         tr("Minecraft Java profile acquisition succeeded.")

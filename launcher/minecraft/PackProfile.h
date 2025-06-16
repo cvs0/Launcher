@@ -79,7 +79,7 @@ public:
     bool revertToBase(int index);
 
     /// reload the list, reload all components, resolve dependencies
-    void reload(Net::Mode netmode);
+    bool reload(Net::Mode netmode);
 
     // reload all components, resolve dependencies
     void resolve(Net::Mode netmode);

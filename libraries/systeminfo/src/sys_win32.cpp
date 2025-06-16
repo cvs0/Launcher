@@ -5,8 +5,24 @@
 
 #include "ntstatus/NtStatusNames.hpp"
 
+// See: https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
+#ifndef PROCESSOR_ARCHITECTURE_INTEL
+#define PROCESSOR_ARCHITECTURE_INTEL 0
+#endif
+#ifndef PROCESSOR_ARCHITECTURE_ARM
+#define PROCESSOR_ARCHITECTURE_ARM 5
+#endif
+#ifndef PROCESSOR_ARCHITECTURE_IA64
+#define PROCESSOR_ARCHITECTURE_IA64 6
+#endif
+#ifndef PROCESSOR_ARCHITECTURE_AMD64
+#define PROCESSOR_ARCHITECTURE_AMD64 9
+#endif
 #ifndef PROCESSOR_ARCHITECTURE_ARM64
 #define PROCESSOR_ARCHITECTURE_ARM64 12
+#endif
+#ifndef PROCESSOR_ARCHITECTURE_UNKNOWN
+#define PROCESSOR_ARCHITECTURE_UNKNOWN 0xffff
 #endif
 
 Sys::KernelInfo Sys::getKernelInfo()
@@ -32,28 +48,6 @@ uint64_t Sys::getSystemRam()
     GlobalMemoryStatusEx( &status );
     // bytes
     return (uint64_t)status.ullTotalPhys;
-}
-
-bool Sys::isSystem64bit()
-{
-#if defined(_WIN64)
-    return true;
-#elif defined(_WIN32)
-    BOOL f64 = false;
-    return IsWow64Process(GetCurrentProcess(), &f64) && f64;
-#else
-    // it's some other kind of system...
-    return false;
-#endif
-}
-
-bool Sys::isCPU64bit()
-{
-    SYSTEM_INFO info;
-    ZeroMemory(&info, sizeof(SYSTEM_INFO));
-    GetNativeSystemInfo(&info);
-    auto arch = info.wProcessorArchitecture;
-    return arch == PROCESSOR_ARCHITECTURE_AMD64 || arch == PROCESSOR_ARCHITECTURE_IA64;
 }
 
 Sys::DistributionInfo Sys::getDistributionInfo()
@@ -108,12 +102,19 @@ Sys::Architecture Sys::systemArchitecture() {
     QString qtArch = QSysInfo::currentCpuArchitecture();
     switch (arch) {
         case PROCESSOR_ARCHITECTURE_AMD64:
-            return { ArchitectureType::AMD64, "x86_64" };
+        {
+            return Sys::Architecture(ArchitectureType::AMD64);
+        }
         case PROCESSOR_ARCHITECTURE_ARM64:
-            return { ArchitectureType::ARM64, "arm64" };
+        {
+            return Sys::Architecture(ArchitectureType::AARCH64);
+        }
         case PROCESSOR_ARCHITECTURE_INTEL:
-            return { ArchitectureType::I386, "i386" };
+        {
+            return Sys::Architecture(ArchitectureType::X86);
+        }
+
         default:
-            return { ArchitectureType::Undetermined, qtArch };
+            return Sys::Architecture(qtArch);
     }
 }

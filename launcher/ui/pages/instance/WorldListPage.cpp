@@ -173,7 +173,7 @@ void WorldListPage::on_actionRemove_triggered()
 
 void WorldListPage::on_actionView_Folder_triggered()
 {
-    DesktopServices::openDirectory(m_worlds->dir().absolutePath(), true);
+    DesktopServices::openDirectory(m_worlds->dir().absolutePath());
 }
 
 void WorldListPage::on_actionDatapacks_triggered()
@@ -190,7 +190,7 @@ void WorldListPage::on_actionDatapacks_triggered()
 
     auto fullPath = m_worlds->data(index, WorldList::FolderRole).toString();
 
-    DesktopServices::openDirectory(FS::PathCombine(fullPath, "datapacks"), true);
+    DesktopServices::openDirectory(FS::PathCombine(fullPath, "datapacks"));
 }
 
 
@@ -314,7 +314,15 @@ void WorldListPage::mceditState(LoggedProcess::State state)
 void WorldListPage::worldChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     auto mcInst = std::dynamic_pointer_cast<MinecraftInstance>(m_inst);
-    bool enableJoinActions = mcInst && mcInst->getPackProfile()->getComponent("net.minecraft")->getReleaseDateTime() >= g_VersionFilterData.quickPlayBeginsDate;
+    bool enableJoinActions = false;
+    if(mcInst)
+    {
+        auto minecraftComponent = mcInst->getPackProfile()->getComponent("net.minecraft");
+        if(minecraftComponent)
+        {
+            enableJoinActions = minecraftComponent->getReleaseDateTime() >= g_VersionFilterData.quickPlayBeginsDate;
+        }
+    }
 
     QModelIndex index = getSelectedWorld();
     bool enable = index.isValid();

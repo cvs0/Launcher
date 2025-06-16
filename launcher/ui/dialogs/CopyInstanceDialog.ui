@@ -43,7 +43,7 @@
       <widget class="QToolButton" name="iconButton">
        <property name="icon">
         <iconset>
-         <normaloff>:/icons/instances/grass</normaloff>:/icons/instances/grass</iconset>
+         <normaloff>:/logo.svg</normaloff>:/logo.svg</iconset>
        </property>
        <property name="iconSize">
         <size>

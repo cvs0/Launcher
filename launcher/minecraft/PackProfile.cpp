@@ -289,6 +289,7 @@ bool PackProfile::load()
     ComponentContainer newComponents;
     if(!loadPackProfile(this, filename, patchesPattern(), newComponents))
     {
+        // FIXME: convert this to an error type?
         qCritical() << "Failed to load the component config for instance" << d->m_instance->name();
         return false;
     }
@@ -320,12 +321,12 @@ bool PackProfile::load()
     }
 }
 
-void PackProfile::reload(Net::Mode netmode)
+bool PackProfile::reload(Net::Mode netmode)
 {
     // Do not reload when the update/resolve task is running. It is in control.
     if(d->m_updateTask)
     {
-        return;
+        return true;
     }
 
     // flush any scheduled saves to not lose state
@@ -334,10 +335,13 @@ void PackProfile::reload(Net::Mode netmode)
     // FIXME: differentiate when a reapply is required by propagating state from components
     invalidateLaunchProfile();
 
-    if(load())
+    if(!load())
     {
-        resolve(netmode);
+        // FIXME: propagate reason for failure
+        return false;
     }
+    resolve(netmode);
+    return true;
 }
 
 Task::Ptr PackProfile::getCurrentTask()

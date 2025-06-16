@@ -129,13 +129,9 @@ void JavaChecker::finished(int exitcode, QProcess::ExitStatus status)
     auto os_arch = results["os.arch"];
     auto java_version = results["java.version"];
     auto java_vendor = results["java.vendor"];
-    bool is_64 = os_arch == "x86_64" || os_arch == "amd64";
-
 
     result.validity = JavaCheckResult::Validity::Valid;
-    result.is_64bit = is_64;
-    result.mojangPlatform = is_64 ? "64" : "32";
-    result.realPlatform = os_arch;
+    result.architecture = Sys::Architecture::fromOSArch(os_arch);
     result.javaVersion = java_version;
     result.javaVendor = java_vendor;
     qDebug() << "Java checker succeeded.";

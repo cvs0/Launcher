@@ -1,3 +1,9 @@
+/* Copyright 2021-2025 Petr Mrázek
+ *
+ * This source is subject to the Microsoft Permissive License (MS-PL).
+ * Please see the COPYING.md file for more information.
+ */
+
 #pragma once
 
 #include <QObject>
@@ -9,7 +15,6 @@
 
 #include <katabasis/DeviceFlow.h>
 
-#include "minecraft/auth/Yggdrasil.h"
 #include "minecraft/auth/AccountData.h"
 #include "minecraft/auth/AccountTask.h"
 #include "minecraft/auth/AuthStep.h"

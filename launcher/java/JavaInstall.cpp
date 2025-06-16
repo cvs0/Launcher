@@ -3,9 +3,14 @@
 
 bool JavaInstall::operator<(const JavaInstall &rhs)
 {
-    auto archCompare = Strings::naturalCompare(arch, rhs.arch, Qt::CaseInsensitive);
-    if(archCompare != 0)
-        return archCompare < 0;
+    if(arch < rhs.arch)
+    {
+        return true;
+    }
+    if(arch > rhs.arch)
+    {
+        return false;
+    }
     if(id < rhs.id)
     {
         return true;

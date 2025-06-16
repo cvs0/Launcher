@@ -32,7 +32,7 @@ class JavaUtils : public QObject
 public:
     JavaUtils();
 
-    JavaInstallPtr MakeJavaPtr(QString path, QString id = "unknown", QString arch = "unknown");
+    JavaInstallPtr MakeJavaPtr(QString path, QString id = "unknown", Sys::Architecture arch = Sys::Architecture());
     QList<QString> FindJavaPaths();
     JavaInstallPtr GetDefaultJava();
 

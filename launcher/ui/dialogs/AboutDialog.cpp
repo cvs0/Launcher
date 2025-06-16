@@ -39,9 +39,6 @@ QString getCreditsHtml(QStringList patrons)
     stream << "<h3>" << QObject::tr("Maintainer", "About Credits") << "</h3>\n";
     stream << "<p>Petr Mr&aacute;zek &lt;<a href='mailto:peterix@gmail.com'>peterix@gmail.com</a>&gt;</p>\n";
 
-    stream << "<h3>Dedicated to Erika</h3>\n";
-    stream << "<p>You gave all the work put into this meaning.</p>\n";
-
     // TODO: grab contributors from git history
     /*
     if(!contributors.isEmpty()) {

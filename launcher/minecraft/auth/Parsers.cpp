@@ -4,6 +4,8 @@
 #include <QJsonArray>
 #include <QDebug>
 
+#include "BuildConfig.h"
+
 namespace Parsers {
 
 bool getDateTime(QJsonValue value, QDateTime & out) {
@@ -256,7 +258,7 @@ bool parseForcedMigrationResponse(QByteArray & data, bool& result) {
     QJsonParseError jsonError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
     if(jsonError.error) {
-        qWarning() << "Failed to parse response from https://api.minecraftservices.com/rollout/v1/msamigrationforced as JSON: " << jsonError.errorString();
+        qWarning() << "Failed to parse response from " << BuildConfig.API_BASE << "/rollout/v1/msamigrationforced as JSON: " << jsonError.errorString();
         return false;
     }
 
@@ -286,7 +288,7 @@ bool parseRolloutResponse(QByteArray & data, bool& result) {
     QJsonParseError jsonError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
     if(jsonError.error) {
-        qWarning() << "Failed to parse response from https://api.minecraftservices.com/rollout/v1/msamigration as JSON: " << jsonError.errorString();
+        qWarning() << "Failed to parse response from " << BuildConfig.API_BASE << "/rollout/v1/msamigration as JSON: " << jsonError.errorString();
         return false;
     }
 
@@ -315,7 +317,7 @@ bool parseMojangResponse(QByteArray & data, Katabasis::Token &output) {
 #endif
     QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
     if(jsonError.error) {
-        qWarning() << "Failed to parse response from api.minecraftservices.com/launcher/login as JSON: " << jsonError.errorString();
+        qWarning() << "Failed to parse response from " << BuildConfig.API_BASE << "/launcher/login as JSON: " << jsonError.errorString();
         return false;
     }
 

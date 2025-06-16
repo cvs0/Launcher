@@ -2,11 +2,12 @@
 
 #include "BaseVersion.h"
 #include "JavaVersion.h"
+#include <sys.h>
 
 struct JavaInstall : public BaseVersion
 {
     JavaInstall(){}
-    JavaInstall(QString id, QString arch, QString path)
+    JavaInstall(const QString& id, const Sys::Architecture& arch, const QString& path)
     : id(id), arch(arch), path(path)
     {
     }
@@ -22,7 +23,7 @@ struct JavaInstall : public BaseVersion
 
     virtual QString typeString() const
     {
-        return arch;
+        return arch.serialize();
     }
 
     bool operator<(const JavaInstall & rhs);
@@ -30,7 +31,7 @@ struct JavaInstall : public BaseVersion
     bool operator>(const JavaInstall & rhs);
 
     JavaVersion id;
-    QString arch;
+    Sys::Architecture arch;
     QString path;
     bool recommended = false;
 };

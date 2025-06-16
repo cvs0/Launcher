@@ -311,7 +311,7 @@ void JavaSettingsWidget::on_javaStatusBtn_clicked()
         }
         case JavaStatus::Good:
             text += QObject::tr("Java test succeeded!<br />Platform reported: %1<br />Java version "
-                "reported: %2<br />").arg(m_result.realPlatform, m_result.javaVersion.toString());
+                "reported: %2<br />").arg(m_result.architecture.getRaw(), m_result.javaVersion.toString());
             break;
         case JavaStatus::Pending:
             // TODO: abort here?

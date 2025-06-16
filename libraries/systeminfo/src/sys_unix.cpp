@@ -82,17 +82,6 @@ uint64_t Sys::getSystemRam()
     return 0; // nothing found
 }
 
-bool Sys::isCPU64bit()
-{
-    return isSystem64bit();
-}
-
-bool Sys::isSystem64bit()
-{
-    // kernel build arch on linux
-    return QSysInfo::currentCpuArchitecture() == "x86_64";
-}
-
 Sys::DistributionInfo Sys::getDistributionInfo()
 {
     DistributionInfo systemd_info = read_os_release();
@@ -120,16 +109,16 @@ Sys::DistributionInfo Sys::getDistributionInfo()
 Sys::Architecture Sys::systemArchitecture() {
     QString qtArch = QSysInfo::currentCpuArchitecture();
     if (qtArch == "x86_64") {
-        return { ArchitectureType::AMD64, qtArch };
+        return Sys::Architecture(ArchitectureType::AMD64);
     }
     else if (qtArch == "i386") {
-        return { ArchitectureType::I386, qtArch };
+        return Sys::Architecture(ArchitectureType::X86);
     }
-    else if (qtArch == "arm64") {
-        return { ArchitectureType::ARM64, qtArch };
+    else if (qtArch == "arm64" || qtArch == "aarch64") {
+        return Sys::Architecture(ArchitectureType::AARCH64);
     }
     else {
-        return { ArchitectureType::Undetermined, qtArch };
+        return Sys::Architecture(qtArch);
     }
 }
 

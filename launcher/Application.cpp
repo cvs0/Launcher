@@ -13,7 +13,6 @@
 #include "ui/pages/global/LanguagePage.h"
 #include "ui/pages/global/ProxyPage.h"
 #include "ui/pages/global/ExternalToolsPage.h"
-#include "ui/pages/global/AccountListPage.h"
 #include "ui/pages/global/PasteEEPage.h"
 #include "ui/pages/global/CustomCommandsPage.h"
 
@@ -26,8 +25,8 @@
 #include "ui/setupwizard/SetupWizard.h"
 #include "ui/setupwizard/LanguageWizardPage.h"
 #include "ui/setupwizard/JavaWizardPage.h"
-#include "ui/setupwizard/AnalyticsWizardPage.h"
 
+#include "ui/dialogs/AccountsDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
 
 #include "ui/pagedialog/PageDialog.h"
@@ -53,6 +52,9 @@
 #include "icons/IconList.h"
 #include "net/HttpMetaCache.h"
 
+#include "skins/CapeCache.h"
+#include "skins/SkinsModel.h"
+
 #include "java/JavaUtils.h"
 
 #include "updater/UpdateChecker.h"
@@ -73,11 +75,7 @@
 #include <DesktopServices.h>
 #include <LocalPeer.h>
 
-#include <ganalytics.h>
 #include <sys.h>
-
-#include <Secrets.h>
-
 
 #if defined Q_OS_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -123,14 +121,7 @@ QString getIdealPlatform(QString currentPlatform) {
     auto info = Sys::getKernelInfo();
     switch(info.kernelType) {
         case Sys::KernelType::Darwin: {
-            if(info.kernelMajor >= 17) {
-                // macOS 10.13 or newer
-                return "osx64-5.15.2";
-            }
-            else {
-                // macOS 10.12 or older
-                return "osx64";
-            }
+            return "osx64-5.15.2";
         }
         case Sys::KernelType::Windows: {
             // FIXME: 5.15.2 is not stable on Windows, due to a large number of completely unpredictable and hard to reproduce issues
@@ -658,7 +649,7 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
         m_settings->registerSetting("AutoUpdate", true);
 
         // Theming
-        m_settings->registerSetting("IconTheme", QString("multimc"));
+        m_settings->registerSetting("IconTheme", QString("pe_colored"));
         m_settings->registerSetting("ApplicationTheme", QString("system"));
 
         // Notifications
@@ -698,6 +689,7 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
         m_settings->registerSetting("InstanceDir", "instances");
         m_settings->registerSetting({"CentralModsDir", "ModsDir"}, "mods");
         m_settings->registerSetting("IconsDir", "icons");
+        m_settings->registerSetting("SkinsDir", "skins");
 
         // Editors
         m_settings->registerSetting("JsonEditor", QString());
@@ -781,16 +773,11 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
 
         m_settings->registerSetting("UpdateDialogGeometry", "");
 
+        m_settings->registerSetting("AccountsDialogGeometry", "");
+        m_settings->registerSetting("AccountsDialogSplitterState", "");
+
         // paste.ee API key
         m_settings->registerSetting("PasteEEAPIKey", "multimc");
-
-        if(!BuildConfig.ANALYTICS_ID.isEmpty())
-        {
-            // Analytics
-            m_settings->registerSetting("Analytics", true);
-            m_settings->registerSetting("AnalyticsSeen", 0);
-            m_settings->registerSetting("AnalyticsClientID", QString());
-        }
 
         // Init page provider
         {
@@ -802,7 +789,6 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
             m_globalSettingsProvider->addPage<CustomCommandsPage>();
             m_globalSettingsProvider->addPage<ProxyPage>();
             m_globalSettingsProvider->addPage<ExternalToolsPage>();
-            m_globalSettingsProvider->addPage<AccountListPage>();
             m_globalSettingsProvider->addPage<PasteEEPage>();
         }
         qDebug() << "<> Settings loaded.";
@@ -883,6 +869,17 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
         insertTheme(new BrightTheme());
         insertTheme(new CustomTheme(darkTheme, "custom"));
         qDebug() << "<> Widget themes initialized.";
+    }
+
+    // Skins
+    {
+        auto setting = APPLICATION->settings()->getSetting("SkinsDir");
+        m_skinsModel.reset(new SkinsModel(setting->get().toString()));
+        connect(setting.get(), &Setting::SettingChanged,[&](const Setting &, QVariant value)
+        {
+            m_skinsModel->directoryChanged(value.toString());
+        });
+        qDebug() << "<> Skins intialized.";
     }
 
     // initialize and load all instances
@@ -972,48 +969,6 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv)
         qDebug() << "<> Application theme set.";
     }
 
-    // Initialize analytics
-    /*
-    [this]()
-    {
-        const int analyticsVersion = 2;
-        if(BuildConfig.ANALYTICS_ID.isEmpty())
-        {
-            return;
-        }
-
-        auto analyticsSetting = m_settings->getSetting("Analytics");
-        connect(analyticsSetting.get(), &Setting::SettingChanged, this, &Application::analyticsSettingChanged);
-        QString clientID = m_settings->get("AnalyticsClientID").toString();
-        if(clientID.isEmpty())
-        {
-            clientID = QUuid::createUuid().toString();
-            clientID.remove(QLatin1Char('{'));
-            clientID.remove(QLatin1Char('}'));
-            m_settings->set("AnalyticsClientID", clientID);
-        }
-        m_analytics = new GAnalytics(BuildConfig.ANALYTICS_ID, clientID, analyticsVersion, this);
-        m_analytics->setLogLevel(GAnalytics::Debug);
-        m_analytics->setAnonymizeIPs(true);
-        // FIXME: the ganalytics library has no idea about our fancy shared pointers...
-        m_analytics->setNetworkAccessManager(network().get());
-
-        if(m_settings->get("AnalyticsSeen").toInt() < m_analytics->version())
-        {
-            qDebug() << "Analytics info not seen by user yet (or old version).";
-            return;
-        }
-        if(!m_settings->get("Analytics").toBool())
-        {
-            qDebug() << "Analytics disabled by user.";
-            return;
-        }
-
-        m_analytics->enable();
-        qDebug() << "<> Initialized analytics with tid" << BuildConfig.ANALYTICS_ID;
-    }();
-    */
-
     if(createSetupWizard())
     {
         return;
@@ -1040,29 +995,13 @@ bool Application::createSetupWizard()
         }
         return false;
     }();
-    bool analyticsRequired = [&]()
-    {
-        if(!m_analytics) {
-            return false;
-        }
-        if(BuildConfig.ANALYTICS_ID.isEmpty()) {
-            return false;
-        }
-        if (!settings()->get("Analytics").toBool()) {
-            return false;
-        }
-        if (settings()->get("AnalyticsSeen").toInt() < analytics()->version()) {
-            return true;
-        }
-        return false;
-    }();
     bool languageRequired = [&]()
     {
         if (settings()->get("Language").toString().isEmpty())
             return true;
         return false;
     }();
-    bool wizardRequired = javaRequired || analyticsRequired || languageRequired;
+    bool wizardRequired = javaRequired || languageRequired;
 
     if(wizardRequired)
     {
@@ -1074,10 +1013,6 @@ bool Application::createSetupWizard()
         if (javaRequired)
         {
             m_setupWizard->addPage(new JavaWizardPage(m_setupWizard));
-        }
-        if(analyticsRequired)
-        {
-            m_setupWizard->addPage(new AnalyticsWizardPage(m_setupWizard));
         }
         connect(m_setupWizard, &QDialog::finished, this, &Application::setupWizardFinished);
         m_setupWizard->show();
@@ -1120,8 +1055,8 @@ void Application::performMainStartupAction()
 
             if(!m_profileToUse.isEmpty())
             {
-                accountToUse = accounts()->getAccountByProfileName(m_profileToUse);
-                if(!accountToUse) {
+                int dummyRow;
+                if(!accounts()->getAccountByProfileName(m_profileToUse, accountToUse, dummyRow)) {
                     return;
                 }
                 qDebug() << "   Launching with account" << m_profileToUse;
@@ -1226,8 +1161,8 @@ void Application::messageReceived(const QByteArray& message)
 
         MinecraftAccountPtr accountObject;
         if(!profile.isEmpty()) {
-            accountObject = accounts()->getAccountByProfileName(profile);
-            if(!accountObject) {
+            int dummyRow;
+            if(!accounts()->getAccountByProfileName(profile, accountObject, dummyRow)) {
                 qWarning() << "Launch command requires the specified profile to be valid. " << profile << "does not resolve to any account.";
                 return;
             }
@@ -1246,22 +1181,6 @@ void Application::messageReceived(const QByteArray& message)
     {
         qWarning() << "Received invalid message" << message;
     }
-}
-
-void Application::analyticsSettingChanged(const Setting&, QVariant value)
-{
-    if(!m_analytics)
-        return;
-    bool enabled = value.toBool();
-    if(enabled)
-    {
-        qDebug() << "Analytics enabled by user.";
-    }
-    else
-    {
-        qDebug() << "Analytics disabled by user.";
-    }
-    m_analytics->enable(enabled);
 }
 
 std::shared_ptr<TranslationsModel> Application::translations()
@@ -1323,7 +1242,7 @@ bool Application::openJsonEditor(const QString &filename)
     const QString file = QDir::current().absoluteFilePath(filename);
     if (m_settings->get("JsonEditor").toString().isEmpty())
     {
-        return DesktopServices::openUrl(QUrl::fromLocalFile(file));
+        return DesktopServices::openFile(file);
     }
     else
     {
@@ -1508,6 +1427,13 @@ void Application::ShowGlobalSettings(class QWidget* parent, QString open_page)
     emit globalSettingsClosed();
 }
 
+void Application::ShowAccountsDialog(class QWidget* parent)
+{
+    AccountsDialog dialog(parent);
+    dialog.exec();
+}
+
+
 MainWindow* Application::showMainWindow(bool minimized)
 {
     if(m_mainWindow)
@@ -1534,60 +1460,6 @@ MainWindow* Application::showMainWindow(bool minimized)
         connect(this, &Application::updateAllowedChanged, m_mainWindow, &MainWindow::updatesAllowedChanged);
         connect(m_mainWindow, &MainWindow::isClosing, this, &Application::on_windowClose);
         m_openWindows++;
-    }
-    // FIXME: move this somewhere else...
-    if(m_analytics)
-    {
-        auto windowSize = m_mainWindow->size();
-        auto sizeString = QString("%1x%2").arg(windowSize.width()).arg(windowSize.height());
-        qDebug() << "Viewport size" << sizeString;
-        m_analytics->setViewportSize(sizeString);
-        /*
-         * cm1 = java min heap [MB]
-         * cm2 = java max heap [MB]
-         * cm3 = system RAM [MB]
-         *
-         * cd1 = java version
-         * cd2 = java architecture
-         * cd3 = system architecture
-         * cd4 = CPU architecture
-         */
-        QVariantMap customValues;
-        int min = m_settings->get("MinMemAlloc").toInt();
-        int max = m_settings->get("MaxMemAlloc").toInt();
-        if(min < max)
-        {
-            customValues["cm1"] = min;
-            customValues["cm2"] = max;
-        }
-        else
-        {
-            customValues["cm1"] = max;
-            customValues["cm2"] = min;
-        }
-
-        constexpr uint64_t Mega = 1024ull * 1024ull;
-        int ramSize = int(Sys::getSystemRam() / Mega);
-        qDebug() << "RAM size is" << ramSize << "MB";
-        customValues["cm3"] = ramSize;
-
-        customValues["cd1"] = m_settings->get("JavaVersion");
-        customValues["cd2"] = m_settings->get("JavaArchitecture");
-        customValues["cd3"] = Sys::isSystem64bit() ? "64":"32";
-        customValues["cd4"] = Sys::isCPU64bit() ? "64":"32";
-        auto kernelInfo = Sys::getKernelInfo();
-        customValues["cd5"] = kernelInfo.kernelName;
-        customValues["cd6"] = kernelInfo.kernelVersion;
-        auto distInfo = Sys::getDistributionInfo();
-        if(!distInfo.distributionName.isEmpty())
-        {
-            customValues["cd7"] = distInfo.distributionName;
-        }
-        if(!distInfo.distributionVersion.isEmpty())
-        {
-            customValues["cd8"] = distInfo.distributionVersion;
-        }
-        m_analytics->sendScreenView("Main Window", customValues);
     }
     return m_mainWindow;
 }
@@ -1648,7 +1520,7 @@ void Application::on_windowClose()
 }
 
 QString Application::msaClientId() const {
-    return Secrets::getMSAClientID('-');
+    return BuildConfig.MSA_CLIENT_ID;
 }
 
 void Application::updateProxySettings(QString proxyTypeStr, QString addr, int port, QString user, QString password)
@@ -1729,6 +1601,15 @@ shared_qobject_ptr<Meta::Index> Application::metadataIndex()
         m_metadataIndex.reset(new Meta::Index());
     }
     return m_metadataIndex;
+}
+
+shared_qobject_ptr<CapeCache> Application::capeCache()
+{
+    if (!m_capeCache)
+    {
+        m_capeCache.reset(new CapeCache(this));
+    }
+    return m_capeCache;
 }
 
 QString Application::getJarsPath()

@@ -73,7 +73,7 @@ void CheckJava::executeTask()
         auto verString = instance->settings()->get("JavaVersion").toString();
         auto archString = instance->settings()->get("JavaArchitecture").toString();
         auto vendorString = instance->settings()->get("JavaVendor").toString();
-        printJavaInfo(verString, archString, vendorString);
+        printJavaInfo(verString, Sys::Architecture::deserialize(archString), vendorString);
     }
     emitSucceeded();
 }
@@ -88,7 +88,7 @@ void CheckJava::checkJavaFinished(JavaCheckResult result)
             emit logLine(QString("Could not start java:"), MessageLevel::Error);
             emit logLines(result.errorLog.split('\n'), MessageLevel::Error);
             emit logLine("\nCheck your MultiMC Java settings.", MessageLevel::Launcher);
-            printSystemInfo(false, false);
+            printSystemInfo(false, Sys::Architecture{});
             emitFailed(QString("Could not start java!"));
             return;
         }
@@ -97,16 +97,16 @@ void CheckJava::checkJavaFinished(JavaCheckResult result)
             emit logLine(QString("Java checker returned some invalid data MultiMC doesn't understand:"), MessageLevel::Error);
             emit logLines(result.outLog.split('\n'), MessageLevel::Warning);
             emit logLine("\nMinecraft might not start properly.", MessageLevel::Launcher);
-            printSystemInfo(false, false);
+            printSystemInfo(false, Sys::Architecture{});
             emitSucceeded();
             return;
         }
         case JavaCheckResult::Validity::Valid:
         {
             auto instance = m_parent->instance();
-            printJavaInfo(result.javaVersion.toString(), result.mojangPlatform, result.javaVendor);
+            printJavaInfo(result.javaVersion.toString(), result.architecture, result.javaVendor);
             instance->settings()->set("JavaVersion", result.javaVersion.toString());
-            instance->settings()->set("JavaArchitecture", result.mojangPlatform);
+            instance->settings()->set("JavaArchitecture", result.architecture.serialize());
             instance->settings()->set("JavaVendor", result.javaVendor);
             instance->settings()->set("JavaTimestamp", m_javaUnixTime);
             emitSucceeded();
@@ -115,25 +115,20 @@ void CheckJava::checkJavaFinished(JavaCheckResult result)
     }
 }
 
-void CheckJava::printJavaInfo(const QString& version, const QString& architecture, const QString & vendor)
+void CheckJava::printJavaInfo(const QString& version, const Sys::Architecture& architecture, const QString & vendor)
 {
-    emit logLine(QString("Java is version %1, using %2-bit architecture, from %3.\n\n").arg(version, architecture, vendor), MessageLevel::Launcher);
-    printSystemInfo(true, architecture == "64");
+    emit logLine(QString("Java is version %1, using %2 architecture, from %3.\n\n").arg(version, architecture.serialize(), vendor), MessageLevel::Launcher);
+    printSystemInfo(true, architecture);
 }
 
-void CheckJava::printSystemInfo(bool javaIsKnown, bool javaIs64bit)
+void CheckJava::printSystemInfo(bool javaIsKnown, const Sys::Architecture& javaArchitecture)
 {
-    auto cpu64 = Sys::isCPU64bit();
-    auto system64 = Sys::isSystem64bit();
-    if(cpu64 != system64)
-    {
-        emit logLine(QString("Your CPU architecture is not matching your system architecture. You might want to install a 64bit Operating System.\n\n"), MessageLevel::Error);
-    }
     if(javaIsKnown)
     {
-        if(javaIs64bit != system64)
+        auto systemArch = Sys::systemArchitecture();
+        if(javaArchitecture != systemArch)
         {
-            emit logLine(QString("Your Java architecture is not matching your system architecture. You might want to install a 64bit Java version.\n\n"), MessageLevel::Error);
+            emit logLine(QString("Your Java architecture is not matching your system architecture. You might want to use a different Java version.\n\n"), MessageLevel::Error);
         }
     }
 }

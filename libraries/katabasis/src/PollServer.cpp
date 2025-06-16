@@ -57,7 +57,6 @@ void PollServer::startPolling()
 
 void PollServer::onPollTimeout()
 {
-    qDebug() << "PollServer::onPollTimeout: retrying";
     QNetworkReply * reply = manager_->post(request_, payload_);
     connect(reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
 }

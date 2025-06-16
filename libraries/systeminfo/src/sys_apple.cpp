@@ -55,18 +55,6 @@ uint64_t Sys::getSystemRam()
     }
 }
 
-bool Sys::isCPU64bit()
-{
-    // not even going to pretend I'm going to support anything else
-    return true;
-}
-
-bool Sys::isSystem64bit()
-{
-    // yep. maybe when we have 128bit CPUs on consumer devices.
-    return true;
-}
-
 Sys::DistributionInfo Sys::getDistributionInfo()
 {
     DistributionInfo result;
@@ -83,15 +71,15 @@ Sys::Architecture Sys::systemArchitecture() {
     uname(&buf);
     QString arch = buf.machine;
     if (arch == "x86_64") {
-        return { ArchitectureType::AMD64, arch };
+        return Sys::Architecture(ArchitectureType::AMD64);
     }
     else if (arch == "i386") {
-        return { ArchitectureType::I386, arch };
+        return Sys::Architecture(ArchitectureType::X86);
     }
     else if (arch == "arm64") {
-        return { ArchitectureType::ARM64, arch };
+        return Sys::Architecture(ArchitectureType::AARCH64);
     }
     else {
-        return { ArchitectureType::Undetermined, arch };
+        return Sys::Architecture(arch);
     }
 }

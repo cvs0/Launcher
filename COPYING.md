@@ -76,6 +76,15 @@ Portions are licensed under MS-PL:
     laws, the contributors exclude the implied warranties of merchantability,
     fitness for a particular purpose and non-infringement.
 
+# Mojang assets
+
+    MultiMC contains some Minecraft assets owned by Mojang/Microsoft.
+    These are included, because MultiMC is, after all, a Minecraft launcher.
+    And without some creeper faces, what is even the point.
+
+    If someone from Mojang finds this objectionable, we'll replace these
+    with suitable substitutes. Until then, enjoy the Minecraft vibes.
+
 # MinGW runtime (Windows)
 
     Copyright (c) 2012 MinGW.org project
@@ -314,6 +323,30 @@ Portions are licensed under MS-PL:
     FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
     ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
+
+# qt-qrcodegenerator
+
+    MIT License
+
+    Copyright (c) 2023 Alex Spataru
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 
 # tomlc99
 

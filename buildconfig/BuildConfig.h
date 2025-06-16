@@ -46,9 +46,6 @@ public:
     QString USER_AGENT_UNCACHED;
 
 
-    /// Google analytics ID
-    QString ANALYTICS_ID;
-
     /// URL for notifications
     QString NOTIFICATION_URL;
 
@@ -65,6 +62,12 @@ public:
     QString VERSION_STR;
 
     /**
+     * This is used to open the news page with the "More news" button.
+     * It defaults in CMakeLists.txt to "https://multimc.org/posts.html"
+     */
+    QString NEWS_URL;
+
+    /**
      * This is used to fetch the news RSS feed.
      * It defaults in CMakeLists.txt to "https://multimc.org/rss.xml"
      */
@@ -74,6 +77,12 @@ public:
      * API key you can get from paste.ee when you register an account
      */
     QString PASTE_EE_KEY;
+
+    /**
+     * API key from registering an application in Microsoft Azure
+     * See: https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
+     */
+    QString MSA_CLIENT_ID;
 
     /**
      * Client ID you can get from Imgur when you register an application
@@ -88,10 +97,13 @@ public:
     QString BUG_TRACKER_URL;
     QString DISCORD_URL;
     QString SUBREDDIT_URL;
+    QString PATREON_URL;
 
     QString RESOURCE_BASE = "https://resources.download.minecraft.net/";
     QString LIBRARY_BASE = "https://libraries.minecraft.net/";
-    QString AUTH_BASE = "https://authserver.mojang.com/";
+    QString API_BASE = "https://api.minecraftservices.com";
+    QString SESSION_BASE = "https://sessionserver.mojang.com";
+    QString TEXTURE_BASE = "http://textures.minecraft.net";
     QString IMGUR_BASE_URL = "https://api.imgur.com/3/";
     QString FMLLIBS_BASE_URL = "https://files.multimc.org/fmllibs/";
     QString TRANSLATIONS_BASE_URL = "https://files.multimc.org/translations/";

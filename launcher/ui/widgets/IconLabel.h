@@ -12,8 +12,8 @@ class IconLabel : public QWidget
     Q_OBJECT
 
 public:
-    /// Create a line separator. orientation is the orientation of the line.
     explicit IconLabel(QWidget *parent, QIcon icon, QSize size);
+    virtual ~IconLabel() = default;
 
     virtual QSize sizeHint() const;
     virtual void paintEvent(QPaintEvent *);
@@ -23,4 +23,20 @@ public:
 private:
     QSize m_size;
     QIcon m_icon;
+};
+
+class IconLabel24 : public IconLabel
+{
+    Q_OBJECT
+public:
+    explicit IconLabel24(QWidget *parent) : IconLabel(parent, QIcon(), QSize(24, 24)) {}
+    virtual ~IconLabel24() = default;
+};
+
+class IconLabel32 : public IconLabel
+{
+    Q_OBJECT
+public:
+    explicit IconLabel32(QWidget *parent) : IconLabel(parent, QIcon(), QSize(32, 32)) {}
+    virtual ~IconLabel32() = default;
 };

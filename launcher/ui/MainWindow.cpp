@@ -54,7 +54,6 @@
 #include <java/JavaInstallList.h>
 #include <launch/LaunchTask.h>
 #include <minecraft/auth/AccountList.h>
-#include <SkinUtils.h>
 #include <BuildConfig.h>
 #include <net/NetJob.h>
 #include <net/Download.h>
@@ -81,7 +80,6 @@
 #include "ui/dialogs/IconPickerDialog.h"
 #include "ui/dialogs/CopyInstanceDialog.h"
 #include "ui/dialogs/UpdateDialog.h"
-#include "ui/dialogs/EditAccountDialog.h"
 #include "ui/dialogs/NotificationDialog.h"
 #include "ui/dialogs/CreateShortcutDialog.h"
 #include "ui/dialogs/ExportInstanceDialog.h"
@@ -96,15 +94,22 @@
 #include "MMCTime.h"
 
 namespace {
-QString profileInUseFilter(const QString & profile, bool used)
+QString profileInUseFilter(const QString& profileName, const QString& accountName, bool used)
 {
+    QString displayString;
+    if(profileName.size() == 0) {
+        displayString = QObject::tr("No profile (%1)").arg(accountName);
+    }
+    else {
+        displayString = profileName;
+    }
     if(used)
     {
-        return QObject::tr("%1 (in use)").arg(profile);
+        return QObject::tr("%1 (in use)").arg(displayString);
     }
     else
     {
-        return profile;
+        return displayString;
     }
 }
 }
@@ -403,13 +408,16 @@ public:
 
         mainToolBar->addSeparator();
 
-        actionPatreon = TranslatedAction(MainWindow);
-        actionPatreon->setObjectName(QStringLiteral("actionPatreon"));
-        actionPatreon->setIcon(APPLICATION->getThemedIcon("patreon"));
-        actionPatreon.setTextId(QT_TRANSLATE_NOOP("MainWindow", "Support %1"));
-        actionPatreon.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "Open the %1 Patreon page."));
-        all_actions.append(&actionPatreon);
-        mainToolBar->addAction(actionPatreon);
+        if (!BuildConfig.PATREON_URL.isEmpty())
+        {
+            actionPatreon = TranslatedAction(MainWindow);
+            actionPatreon->setObjectName(QStringLiteral("actionPatreon"));
+            actionPatreon->setIcon(APPLICATION->getThemedIcon("patreon"));
+            actionPatreon.setTextId(QT_TRANSLATE_NOOP("MainWindow", "Support %1"));
+            actionPatreon.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "Open the %1 Patreon page."));
+            all_actions.append(&actionPatreon);
+            mainToolBar->addAction(actionPatreon);
+        }
 
         actionCAT = TranslatedAction(MainWindow);
         actionCAT->setObjectName(QStringLiteral("actionCAT"));
@@ -478,7 +486,7 @@ public:
         // NOTE: not added to toolbar, but used for instance context menu (right click)
         actionChangeInstIcon = TranslatedAction(MainWindow);
         actionChangeInstIcon->setObjectName(QStringLiteral("actionChangeInstIcon"));
-        actionChangeInstIcon->setIcon(QIcon(":/icons/instances/grass"));
+        actionChangeInstIcon->setIcon(QIcon(":/logo.svg"));
         actionChangeInstIcon->setIconVisibleInMenu(true);
         actionChangeInstIcon.setTextId(QT_TRANSLATE_NOOP("MainWindow", "Change Icon"));
         actionChangeInstIcon.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "Change the selected instance's icon."));
@@ -504,6 +512,13 @@ public:
         renameButton->setToolTip(actionRenameInstance->toolTip());
         renameButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         instanceToolBar->addWidget(renameButton);
+
+        actionChangeInstGroup = TranslatedAction(MainWindow);
+        actionChangeInstGroup->setObjectName(QStringLiteral("actionChangeInstGroup"));
+        actionChangeInstGroup.setTextId(QT_TRANSLATE_NOOP("MainWindow", "Change Group"));
+        actionChangeInstGroup.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "Change the selected instance's group."));
+        all_actions.append(&actionChangeInstGroup);
+        instanceToolBar->addAction(actionChangeInstGroup);
 
         instanceToolBar->addSeparator();
 
@@ -555,13 +570,6 @@ public:
         actionScreenshots.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "View and upload screenshots for this instance."));
         all_actions.append(&actionScreenshots);
         instanceToolBar->addAction(actionScreenshots);
-
-        actionChangeInstGroup = TranslatedAction(MainWindow);
-        actionChangeInstGroup->setObjectName(QStringLiteral("actionChangeInstGroup"));
-        actionChangeInstGroup.setTextId(QT_TRANSLATE_NOOP("MainWindow", "Change Group"));
-        actionChangeInstGroup.setTooltipId(QT_TRANSLATE_NOOP("MainWindow", "Change the selected instance's group."));
-        all_actions.append(&actionChangeInstGroup);
-        instanceToolBar->addAction(actionChangeInstGroup);
 
         instanceToolBar->addSeparator();
 
@@ -804,29 +812,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new MainWindow
     ui->mainToolBar->addAction(accountMenuButtonAction);
 
     // Update the menu when the active account changes.
-    // Shouldn't have to use lambdas here like this, but if I don't, the compiler throws a fit.
-    // Template hell sucks...
-    connect(
-        APPLICATION->accounts().get(),
-        &AccountList::defaultAccountChanged,
-        [this] {
-            defaultAccountChanged();
-        }
-    );
-    connect(
-        APPLICATION->accounts().get(),
-        &AccountList::listChanged,
-        [this]
-        {
-            repopulateAccountsMenu();
-        }
-    );
+    connect(APPLICATION->accounts().get(), &AccountList::defaultAccountChanged, this, &MainWindow::defaultAccountChanged);
+    connect(APPLICATION->accounts().get(), &AccountList::listChanged, this, &MainWindow::repopulateAccountsMenu);
 
     // Show initial account
     defaultAccountChanged();
-
-    // TODO: refresh accounts here?
-    // auto accounts = APPLICATION->accounts();
 
     // load the news
     {
@@ -877,11 +867,11 @@ void MainWindow::retranslateUi()
     auto accounts = APPLICATION->accounts();
     MinecraftAccountPtr defaultAccount = accounts->defaultAccount();
     if(defaultAccount) {
-        auto profileLabel = profileInUseFilter(defaultAccount->profileName(), defaultAccount->isInUse());
+        auto profileLabel = profileInUseFilter(defaultAccount->profileName(), defaultAccount->gamerTag(), defaultAccount->isInUse());
         accountMenuButton->setText(profileLabel);
     }
     else {
-        accountMenuButton->setText(tr("Profiles"));
+        accountMenuButton->setText(tr("Accounts"));
     }
 
     if (m_selectedInstance) {
@@ -1089,7 +1079,7 @@ void MainWindow::repopulateAccountsMenu()
         // this can be called before accountMenuButton exists
         if (accountMenuButton)
         {
-            auto profileLabel = profileInUseFilter(defaultAccount->profileName(), defaultAccount->isInUse());
+            auto profileLabel = profileInUseFilter(defaultAccount->profileName(), defaultAccount->gamerTag(), defaultAccount->isInUse());
             accountMenuButton->setText(profileLabel);
         }
     }
@@ -1105,8 +1095,14 @@ void MainWindow::repopulateAccountsMenu()
         // TODO: Nicer way to iterate?
         for (int i = 0; i < accounts->count(); i++)
         {
-            MinecraftAccountPtr account = accounts->at(i);
-            auto profileLabel = profileInUseFilter(account->profileName(), account->isInUse());
+            auto entry = accounts->at(i);
+            if(!entry.isAccount)
+            {
+                continue;
+            }
+            auto account = entry.account;
+
+            auto profileLabel = profileInUseFilter(account->profileName(), account->gamerTag(), account->isInUse());
             QAction *action = new QAction(profileLabel, this);
             action->setData(i);
             action->setCheckable(true);
@@ -1171,7 +1167,7 @@ void MainWindow::changeActiveAccount()
         index = -1;
     }
     auto accounts = APPLICATION->accounts();
-    accounts->setDefaultAccount(index == -1 ? nullptr : accounts->at(index));
+    accounts->setDefaultAccount(index == -1 ? nullptr : accounts->at(index).account);
     defaultAccountChanged();
 }
 
@@ -1181,24 +1177,22 @@ void MainWindow::defaultAccountChanged()
 
     MinecraftAccountPtr account = APPLICATION->accounts()->defaultAccount();
 
-    // FIXME: this needs adjustment for MSA
-    if (account && account->profileName() != "")
+    if (!account)
     {
-        auto profileLabel = profileInUseFilter(account->profileName(), account->isInUse());
-        accountMenuButton->setText(profileLabel);
-        auto face = account->getFace();
-        if(face.isNull()) {
-            accountMenuButton->setIcon(APPLICATION->getThemedIcon("noaccount"));
-        }
-        else {
-            accountMenuButton->setIcon(face);
-        }
+        accountMenuButton->setIcon(APPLICATION->getThemedIcon("noaccount"));
+        accountMenuButton->setText(tr("Accounts"));
         return;
     }
 
-    // Set the icon to the "no account" icon.
-    accountMenuButton->setIcon(APPLICATION->getThemedIcon("noaccount"));
-    accountMenuButton->setText(tr("Profiles"));
+    auto profileLabel = profileInUseFilter(account->profileName(), account->gamerTag(), account->isInUse());
+    accountMenuButton->setText(profileLabel);
+    auto face = account->getFace();
+    if(face.isNull()) {
+        accountMenuButton->setIcon(APPLICATION->getThemedIcon("noaccount"));
+    }
+    else {
+        accountMenuButton->setIcon(face);
+    }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
@@ -1638,8 +1632,7 @@ void MainWindow::deleteGroup()
 
 void MainWindow::on_actionViewInstanceFolder_triggered()
 {
-    QString str = APPLICATION->settings()->get("InstanceDir").toString();
-    DesktopServices::openDirectory(str);
+    DesktopServices::openDirectory(APPLICATION->settings()->get("InstanceDir").toString());
 }
 
 void MainWindow::refreshInstances()
@@ -1649,7 +1642,7 @@ void MainWindow::refreshInstances()
 
 void MainWindow::on_actionViewCentralModsFolder_triggered()
 {
-    DesktopServices::openDirectory(APPLICATION->settings()->get("CentralModsDir").toString(), true);
+    DesktopServices::openDirectory(APPLICATION->settings()->get("CentralModsDir").toString());
 }
 
 void MainWindow::on_actionConfig_Folder_triggered()
@@ -1722,7 +1715,7 @@ void MainWindow::on_actionScreenshots_triggered()
 
 void MainWindow::on_actionManageAccounts_triggered()
 {
-    APPLICATION->ShowGlobalSettings(this, "accounts");
+    APPLICATION->ShowAccountsDialog(this);
 }
 
 void MainWindow::on_actionReportBug_triggered()
@@ -1732,12 +1725,12 @@ void MainWindow::on_actionReportBug_triggered()
 
 void MainWindow::on_actionPatreon_triggered()
 {
-    DesktopServices::openUrl(QUrl("https://www.patreon.com/multimc"));
+    DesktopServices::openUrl(QUrl(BuildConfig.PATREON_URL));
 }
 
 void MainWindow::on_actionMoreNews_triggered()
 {
-    DesktopServices::openUrl(QUrl("https://multimc.org/posts.html"));
+    DesktopServices::openUrl(QUrl(BuildConfig.NEWS_URL));
 }
 
 void MainWindow::newsButtonClicked()
@@ -1749,7 +1742,7 @@ void MainWindow::newsButtonClicked()
     }
     else
     {
-        DesktopServices::openUrl(QUrl("https://multimc.org/posts.html"));
+        DesktopServices::openUrl(QUrl(BuildConfig.NEWS_URL));
     }
 }
 
@@ -1982,7 +1975,7 @@ void MainWindow::selectionBad()
     statusBar()->clearMessage();
     ui->instanceToolBar->setEnabled(false);
     ui->renameButton->setText(tr("Rename Instance"));
-    updateInstanceToolIcon("grass");
+    updateInstanceToolIcon("logo");
 
     // ...and then see if we can enable the previously selected instance
     setSelectedInstanceById(APPLICATION->settings()->get("SelectedInstance").toString());

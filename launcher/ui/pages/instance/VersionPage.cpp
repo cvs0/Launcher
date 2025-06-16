@@ -210,17 +210,23 @@ void VersionPage::updateRunningStatus(bool running)
 
 void VersionPage::updateVersionControls()
 {
-    // FIXME: This is better than the broken stuff we had before, but it would probably be better to handle this in meta somehow
-    auto minecraftReleaseDate = m_profile->getComponent("net.minecraft")->getReleaseDateTime();
+    bool supportsFabric = false;
+    bool supportsLiteLoader = false;
+    bool supportsNeoForge = false;
 
-    bool supportsFabric = minecraftReleaseDate >= g_VersionFilterData.fabricBeginsDate;
+    auto component = m_profile->getComponent("net.minecraft");
+    if(component)
+    {
+        // FIXME: This is better than the broken stuff we had before, but it would probably be better to handle this in meta somehow
+        auto minecraftReleaseDate = m_profile->getComponent("net.minecraft")->getReleaseDateTime();
+        supportsFabric = minecraftReleaseDate >= g_VersionFilterData.fabricBeginsDate;
+        supportsLiteLoader = minecraftReleaseDate <= g_VersionFilterData.liteLoaderEndsDate;
+        supportsNeoForge = minecraftReleaseDate >= g_VersionFilterData.neoForgeBeginsDate;
+    }
+
     ui->actionInstall_Fabric->setEnabled(controlsEnabled && supportsFabric);
     ui->actionInstall_Quilt->setEnabled((controlsEnabled) && supportsFabric);
-
-    bool supportsLiteLoader = minecraftReleaseDate <= g_VersionFilterData.liteLoaderEndsDate;
     ui->actionInstall_LiteLoader->setEnabled(controlsEnabled && supportsLiteLoader);
-
-    bool supportsNeoForge = minecraftReleaseDate >= g_VersionFilterData.neoForgeBeginsDate;
     ui->actionInstall_NeoForge->setEnabled(controlsEnabled && supportsNeoForge);
 
     updateButtons();
@@ -585,12 +591,12 @@ void VersionPage::on_actionInstall_LiteLoader_triggered()
 
 void VersionPage::on_actionLibrariesFolder_triggered()
 {
-    DesktopServices::openDirectory(m_inst->getLocalLibraryPath(), true);
+    DesktopServices::openDirectory(m_inst->getLocalLibraryPath());
 }
 
 void VersionPage::on_actionMinecraftFolder_triggered()
 {
-    DesktopServices::openDirectory(m_inst->gameRoot(), true);
+    DesktopServices::openDirectory(m_inst->gameRoot());
 }
 
 void VersionPage::versionCurrent(const QModelIndex &current, const QModelIndex &previous)

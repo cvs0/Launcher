@@ -28,6 +28,8 @@
 IconList::IconList(const QStringList &builtinPaths, QString path, QObject *parent) : QAbstractListModel(parent)
 {
     QSet<QString> builtinNames;
+    m_logoIcon = QIcon(":/logo.svg");
+    builtinNames.insert("logo");
 
     // add builtin icons
     for(auto & builtinPath: builtinPaths)
@@ -39,7 +41,9 @@ IconList::IconList(const QStringList &builtinPaths, QString path, QObject *paren
             builtinNames.insert(file_info.baseName());
         }
     }
-    for(auto & builtinName : builtinNames)
+    QStringList builtinList = builtinNames.toList();
+    builtinList.sort();
+    for(auto & builtinName : builtinList)
     {
         addThemeIcon(builtinName);
     }
@@ -326,6 +330,7 @@ bool IconList::addThemeIcon(const QString& key)
         beginInsertRows(QModelIndex(), icons.size(), icons.size());
         {
             MMCIcon mmc_icon;
+            mmc_icon.m_logoIcon = m_logoIcon;
             mmc_icon.m_name = key;
             mmc_icon.m_key = key;
             mmc_icon.replace(Builtin, key);
@@ -357,6 +362,7 @@ bool IconList::addIcon(const QString &key, const QString &name, const QString &p
         beginInsertRows(QModelIndex(), icons.size(), icons.size());
         {
             MMCIcon mmc_icon;
+            mmc_icon.m_logoIcon = m_logoIcon;
             mmc_icon.m_name = name;
             mmc_icon.m_key = key;
             mmc_icon.replace(type, icon, path);
@@ -395,7 +401,7 @@ QIcon IconList::getIcon(const QString &key) const
         return icons[icon_index].icon();
 
     // Fallback for icons that don't exist.
-    icon_index = getIconIndex("grass");
+    icon_index = getIconIndex("logo");
 
     if (icon_index != -1)
         return icons[icon_index].icon();
@@ -404,7 +410,7 @@ QIcon IconList::getIcon(const QString &key) const
 
 int IconList::getIconIndex(const QString &key) const
 {
-    auto iter = name_index.find(key == "default" ? "grass" : key);
+    auto iter = name_index.find(key == "default" ? "logo" : key);
     if (iter != name_index.end())
         return *iter;
 

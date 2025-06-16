@@ -225,9 +225,10 @@ void InstanceExportTask::lookupSucceeded()
     if (tmp.isValid()) {
         Json::write(indexJson, tmp.path() + "/modrinth.index.json");
 
+        QDir tmpDir(tmp.path());
+        QDir gameDir(m_instance->gameRoot());
+
         if (!failedFiles.isEmpty()) {
-            QDir tmpDir(tmp.path());
-            QDir gameDir(m_instance->gameRoot());
             for (const auto &file : failedFiles) {
                 QString src = file.absoluteFilePath();
                 tmpDir.mkpath("overrides/" + gameDir.relativeFilePath(file.absolutePath()));
@@ -237,17 +238,17 @@ void InstanceExportTask::lookupSucceeded()
                     return;
                 }
             }
+        }
 
-            if (m_settings.includeGameConfig) {
-                tmpDir.mkdir("overrides");
-                QFile::copy(gameDir.absoluteFilePath("options.txt"), tmpDir.absoluteFilePath("overrides/options.txt"));
-            }
+        if (m_settings.includeGameConfig) {
+            tmpDir.mkdir("overrides");
+            QFile::copy(gameDir.absoluteFilePath("options.txt"), tmpDir.absoluteFilePath("overrides/options.txt"));
+        }
 
-            if (m_settings.includeModConfigs) {
-                tmpDir.mkdir("overrides");
-                FS::copy copy(m_instance->gameRoot() + "/config", tmpDir.absoluteFilePath("overrides/config"));
-                copy();
-            }
+        if (m_settings.includeModConfigs) {
+            tmpDir.mkdir("overrides");
+            FS::copy copy(gameDir.absoluteFilePath("config"), tmpDir.absoluteFilePath("overrides/config"));
+            copy();
         }
 
         setStatus(tr("Zipping modpack..."));

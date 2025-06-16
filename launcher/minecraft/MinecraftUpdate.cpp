@@ -49,7 +49,11 @@ void MinecraftUpdate::executeTask()
     // add metadata update task if necessary
     {
         auto components = m_inst->getPackProfile();
-        components->reload(Net::Mode::Online);
+        if(!components->reload(Net::Mode::Online))
+        {
+            emitFailed(tr("Failed to load version components - mmc-pack.json is probably corrupted."));
+            return;
+        }
         auto task = components->getCurrentTask();
         if(task)
         {

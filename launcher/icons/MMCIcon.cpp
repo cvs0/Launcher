@@ -25,11 +25,8 @@ IconType operator--(IconType &t, int)
     case IconType::Builtin:
         t = IconType::ToBeDeleted;
         break;
-    case IconType::Transient:
-        t = IconType::Builtin;
-        break;
     case IconType::FileBased:
-        t = IconType::Transient;
+        t = IconType::Builtin;
         break;
     default:
     {
@@ -58,7 +55,13 @@ bool MMCIcon::has(IconType _type) const
 QIcon MMCIcon::icon() const
 {
     if (m_current_type == IconType::ToBeDeleted)
+    {
         return QIcon();
+    }
+    if(m_current_type == IconType::Builtin && m_key == "logo")
+    {
+        return m_logoIcon;
+    }
     auto & icon = m_images[m_current_type].icon;
     if(!icon.isNull())
         return icon;

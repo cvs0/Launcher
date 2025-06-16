@@ -9,13 +9,6 @@ This library has served as a base for some (much more full-featured and advanced
 
 Copyright belongs to Petr Mrázek, unless explicitly stated otherwise in the source files. Available under the Apache 2.0 license.
 
-## ganalytics
-A Google Analytics library for Qt.
-
-BSD licensed, derived from [qt-google-analytics](https://github.com/HSAnet/qt-google-analytics).
-
-Modifications include better handling of IP anonymization (can be enabled) and general improvements of the API (application handles persistence and ID generation instead of the library).
-
 ## hoedown
 Hoedown is a revived fork of Sundown, the Markdown parser based on the original code of the Upskirt library by Natacha Porté.
 
@@ -155,6 +148,14 @@ A simple single-file header-only version of a C++17-like optional for default-co
 Imported from: https://github.com/martinmoene/optional-bare/commit/0bb1d183bcee1e854c4ea196b533252c51f98b81
 
 Boost Software License - Version 1.0
+
+## qt-qrcodegenerator
+
+A simple library for generating QR codes
+
+Imported from https://github.com/alex-spataru/Qt-QrCodeGenerator/commit/40c941bf1b03ad26a2e45021ef1a30213c10f91d
+
+MIT
 
 ## quazip
 

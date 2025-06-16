@@ -24,7 +24,6 @@ Config::Config()
 
     BUILD_PLATFORM = "@Launcher_BUILD_PLATFORM@";
     UPDATER_BASE = "@Launcher_UPDATER_BASE@";
-    ANALYTICS_ID = "@Launcher_ANALYTICS_ID@";
     NOTIFICATION_URL = "@Launcher_NOTIFICATION_URL@";
     FULL_VERSION_STR = "@Launcher_VERSION_MAJOR@.@Launcher_VERSION_MINOR@.@Launcher_VERSION_BUILD@";
 
@@ -42,14 +41,17 @@ Config::Config()
     }
 
     VERSION_STR = "@Launcher_VERSION_STRING@";
+    NEWS_URL = "@Launcher_NEWS_URL@";
     NEWS_RSS_URL = "@Launcher_NEWS_RSS_URL@";
     PASTE_EE_KEY = "@Launcher_PASTE_EE_API_KEY@";
+    MSA_CLIENT_ID = "@Launcher_MSA_CLIENT_ID@";
     IMGUR_CLIENT_ID = "@Launcher_IMGUR_CLIENT_ID@";
     META_URL = "@Launcher_META_URL@";
 
     BUG_TRACKER_URL = "@Launcher_BUG_TRACKER_URL@";
     DISCORD_URL = "@Launcher_DISCORD_URL@";
     SUBREDDIT_URL = "@Launcher_SUBREDDIT_URL@";
+    PATREON_URL = "@Launcher_PATREON_URL@";
 }
 
 QString Config::printableVersionString() const

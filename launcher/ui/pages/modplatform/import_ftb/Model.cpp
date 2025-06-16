@@ -248,7 +248,7 @@ void resolveModloader(QString mcVersion, ModLoader &loader) {
                 loader.version = value;
                 return;
             }
-            if(value == "--fml.forgeVersion") {
+            if(value == "--fml.forgeVersion" || value == "--fml.neoForgeVersion") {
                 versionIsNext = true;
             }
         }

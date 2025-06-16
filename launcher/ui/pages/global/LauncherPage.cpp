@@ -31,6 +31,7 @@
 
 #include <QApplication>
 #include <QProcess>
+#include <DesktopServices.h>
 
 // FIXME: possibly move elsewhere
 enum InstSortMode
@@ -62,11 +63,6 @@ LauncherPage::LauncherPage(QWidget *parent) : QWidget(parent), ui(new Ui::Launch
         ui->updateSettingsBox->setHidden(true);
     }
 
-    // Analytics
-    if(BuildConfig.ANALYTICS_ID.isEmpty())
-    {
-        ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->analyticsTab));
-    }
     connect(ui->fontSizeBox, SIGNAL(valueChanged(int)), SLOT(refreshFontPreview()));
     connect(ui->consoleFont, SIGNAL(currentFontChanged(QFont)), SLOT(refreshFontPreview()));
 
@@ -121,6 +117,11 @@ void LauncherPage::on_instDirBrowseBtn_clicked()
         }
     }
 }
+void LauncherPage::on_instDirOpenBtn_clicked()
+{
+    DesktopServices::openDirectory(ui->instDirTextBox->text());
+}
+
 
 void LauncherPage::on_iconsDirBrowseBtn_clicked()
 {
@@ -133,6 +134,11 @@ void LauncherPage::on_iconsDirBrowseBtn_clicked()
         ui->iconsDirTextBox->setText(cooked_dir);
     }
 }
+void LauncherPage::on_iconsDirOpenBtn_clicked()
+{
+    DesktopServices::openDirectory(ui->iconsDirTextBox->text());
+}
+
 void LauncherPage::on_modsDirBrowseBtn_clicked()
 {
     QString raw_dir = QFileDialog::getExistingDirectory(this, tr("Mods Folder"), ui->modsDirTextBox->text());
@@ -144,6 +150,27 @@ void LauncherPage::on_modsDirBrowseBtn_clicked()
         ui->modsDirTextBox->setText(cooked_dir);
     }
 }
+void LauncherPage::on_modsDirOpenBtn_clicked()
+{
+    DesktopServices::openDirectory(ui->modsDirTextBox->text());
+}
+
+void LauncherPage::on_skinsDirBrowseBtn_clicked()
+{
+    QString raw_dir = QFileDialog::getExistingDirectory(this, tr("Skins Folder"), ui->skinsDirTextBox->text());
+
+    // do not allow current dir - it's dirty. Do not allow dirs that don't exist
+    if (!raw_dir.isEmpty() && QDir(raw_dir).exists())
+    {
+        QString cooked_dir = FS::NormalizePath(raw_dir);
+        ui->skinsDirTextBox->setText(cooked_dir);
+    }
+}
+void LauncherPage::on_skinsDirOpenBtn_clicked()
+{
+    DesktopServices::openDirectory(ui->skinsDirTextBox->text());
+}
+
 void LauncherPage::on_migrateDataFolderMacBtn_clicked()
 {
     QFile file(QDir::current().absolutePath() + "/dontmovemacdata");
@@ -225,6 +252,7 @@ void LauncherPage::applySettings()
     s->set("InstanceDir", ui->instDirTextBox->text());
     s->set("CentralModsDir", ui->modsDirTextBox->text());
     s->set("IconsDir", ui->iconsDirTextBox->text());
+    s->set("SkinsDir", ui->skinsDirTextBox->text());
 
     auto sortMode = (InstSortMode)ui->sortingModeGroup->checkedId();
     switch (sortMode)
@@ -236,12 +264,6 @@ void LauncherPage::applySettings()
     default:
         s->set("InstSortMode", "Name");
         break;
-    }
-
-    // Analytics
-    if(!BuildConfig.ANALYTICS_ID.isEmpty())
-    {
-        s->set("Analytics", ui->analyticsCheck->isChecked());
     }
 }
 void LauncherPage::loadSettings()
@@ -326,6 +348,7 @@ void LauncherPage::loadSettings()
     ui->instDirTextBox->setText(s->get("InstanceDir").toString());
     ui->modsDirTextBox->setText(s->get("CentralModsDir").toString());
     ui->iconsDirTextBox->setText(s->get("IconsDir").toString());
+    ui->skinsDirTextBox->setText(s->get("SkinsDir").toString());
 
     QString sortMode = s->get("InstSortMode").toString();
 
@@ -336,12 +359,6 @@ void LauncherPage::loadSettings()
     else
     {
         ui->sortByNameBtn->setChecked(true);
-    }
-
-    // Analytics
-    if(!BuildConfig.ANALYTICS_ID.isEmpty())
-    {
-        ui->analyticsCheck->setChecked(s->get("Analytics").toBool());
     }
 }
 

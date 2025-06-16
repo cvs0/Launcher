@@ -6,6 +6,8 @@
 #include "minecraft/auth/AuthRequest.h"
 #include "minecraft/auth/Parsers.h"
 
+#include "BuildConfig.h"
+
 EntitlementsStep::EntitlementsStep(AccountData* data) : AuthStep(data) {}
 
 EntitlementsStep::~EntitlementsStep() noexcept = default;
@@ -18,7 +20,7 @@ QString EntitlementsStep::describe() {
 void EntitlementsStep::perform() {
     auto uuid = QUuid::createUuid();
     m_entitlementsRequestId = uuid.toString().remove('{').remove('}');
-    auto url = "https://api.minecraftservices.com/entitlements/license?requestId=" + m_entitlementsRequestId;
+    auto url = QString("%1/entitlements/license?requestId=%2").arg(BuildConfig.API_BASE).arg(m_entitlementsRequestId);
     QNetworkRequest request = QNetworkRequest(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Accept", "application/json");
@@ -27,10 +29,6 @@ void EntitlementsStep::perform() {
     connect(requestor, &AuthRequest::finished, this, &EntitlementsStep::onRequestDone);
     requestor->get(request);
     qDebug() << "Getting entitlements...";
-}
-
-void EntitlementsStep::rehydrate() {
-    // NOOP, for now. We only save bools and there's nothing to check.
 }
 
 void EntitlementsStep::onRequestDone(
